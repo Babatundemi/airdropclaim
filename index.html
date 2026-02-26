@@ -1,21 +1,15 @@
 <script>
 let currentAccount = null;
 let isEligible = false;
-let hasClaimed = false;
 
-const contractAddress = "0x000000000000000000000000000000000000dead"; // change to yours
+document.addEventListener("DOMContentLoaded", function () {
 
-// ---------- INIT ----------
-window.addEventListener("load", () => {
+  // Detect wallet
   if (!window.opwallet || !window.opwallet.request) {
-    document.getElementById("noWalletWarn").style.display = "block";
+    const warn = document.getElementById("noWalletWarn");
+    if (warn) warn.style.display = "block";
   }
 
-  const storedClaim = localStorage.getItem("opdrop_claimed");
-  if (storedClaim === "true") {
-    hasClaimed = true;
-    showClaimedState();
-  }
 });
 
 // ---------- CONNECT ----------
@@ -30,64 +24,41 @@ async function connectWallet() {
       method: "eth_requestAccounts"
     });
 
-    if (!Array.isArray(accounts) || accounts.length === 0) {
-      throw new Error("No accounts returned");
+    if (!accounts || accounts.length === 0) {
+      alert("No account found");
+      return;
     }
 
     currentAccount = accounts[0];
 
-    document.getElementById("displayaccounts").textContent =
+    document.getElementById("displayaccounts").innerText =
       currentAccount.slice(0, 6) + "..." + currentAccount.slice(-4);
 
     document.getElementById("walletInfo").classList.add("visible");
     document.getElementById("checkBtn").disabled = false;
 
-    document.getElementById("step1").classList.remove("active");
-    document.getElementById("step1").classList.add("done");
-    document.getElementById("step2").classList.add("active");
-
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     alert("Connection failed");
   }
 }
 
-// ---------- ELIGIBILITY ----------
+// ---------- CHECK ----------
 async function checkEligibility() {
-  try {
-    if (!currentAccount) {
-      alert("Connect wallet first");
-      return;
-    }
+  if (!currentAccount) {
+    alert("Connect wallet first");
+    return;
+  }
 
-    const btn = document.getElementById("checkBtn");
-    btn.innerHTML = '<span class="spinner"></span> Checking...';
-    btn.disabled = true;
+  // Simulated tx count (replace later)
+  const txCount = 3;
 
-    // Example: fake transaction count
-    // Replace with real API call if needed
-    const fakeTxCount = 3;
-
-    if (fakeTxCount >= 2) {
-      isEligible = true;
-      document.getElementById("eligDot").classList.add("dot-green");
-
-      document.getElementById("step2").classList.remove("active");
-      document.getElementById("step2").classList.add("done");
-      document.getElementById("step3").classList.add("active");
-
-      alert("Wallet Eligible ✅");
-    } else {
-      isEligible = false;
-      alert("Not enough transactions (min 2 required)");
-    }
-
-    btn.innerHTML = "Check Eligibility";
-    btn.disabled = false;
-
-  } catch (err) {
-    console.error(err);
-    alert("Eligibility check failed");
+  if (txCount >= 2) {
+    isEligible = true;
+    alert("Eligible ✅");
+  } else {
+    isEligible = false;
+    alert("Not eligible ❌");
   }
 }
 
@@ -100,47 +71,24 @@ async function claimAirdrop() {
     }
 
     if (!isEligible) {
-      alert("Wallet not eligible");
+      alert("Not eligible");
       return;
     }
 
-    if (hasClaimed) {
-      alert("Already claimed");
-      return;
-    }
-
-    const txHash = await window.opwallet.request({
+    const tx = await window.opwallet.request({
       method: "eth_sendTransaction",
       params: [{
         from: currentAccount,
-        to: contractAddress,
+        to: currentAccount,
         value: "0x0"
       }]
     });
 
-    if (!txHash) {
-      throw new Error("Transaction rejected");
-    }
+    alert("Claim success ✅\nTX: " + tx);
 
-    localStorage.setItem("opdrop_claimed", "true");
-    hasClaimed = true;
-
-    showClaimedState();
-
-    alert("Claim successful!\nTX: " + txHash);
-
-  } catch (err) {
-    console.error(err);
-    alert("Claim failed: " + err.message);
-  }
-}
-
-// ---------- CLAIMED UI ----------
-function showClaimedState() {
-  const claimBtn = document.getElementById("claimBtn");
-  if (claimBtn) {
-    claimBtn.disabled = true;
-    claimBtn.innerText = "Already Claimed";
+  } catch (error) {
+    console.error(error);
+    alert("Claim failed");
   }
 }
 </script>

@@ -690,7 +690,7 @@
   <section class="hero">
     <div class="hero-eyebrow">Bitcoin Layer 1 · OP_NET Testnet</div>
     <h1>Claim Your<br/><span class="accent">OPTEST</span> Airdrop</h1>
-    <p>Connect your OP_WALLET and claim free OPTEST tokens on Bitcoin Layer 1. Eligibility is verified on-chain via <a href="https://opscan.org" target="_blank" style="color:var(--orange);text-decoration:none;">opscan.org</a> — wallets need at least 2 testnet transactions.</p>
+    <p>Connect your OP_WALLET and claim free OPTEST tokens on Bitcoin Layer 1. Eligibility is verified on-chain via <a href="opscan.org?network=op_testnet" target="_blank" style="color:var(--orange);text-decoration:none;">opscan.org?network=op_testnet</a> — wallets need at least 2 testnet transactions.</p>
   </section>
 
   <!-- Stats -->
@@ -801,9 +801,9 @@
               <div class="check-title">Transaction Count ≥ 2 (via opscan.org?network=op_testnet)</div>
               <div class="check-sub" id="txCountLabel">Checking...</div>
               <div id="opscanLink" style="display:none;margin-top:4px;">
-                <a id="opscanHref" href="https://opscan.org" target="_blank" rel="noopener"
+                <a id="opscanHref" href="https://opscan.org?network=op_testnet" target="_blank" rel="noopener"
                    style="font-family:var(--mono);font-size:10px;color:var(--orange);text-decoration:none;">
-                  → Verify on opscan.org ↗
+                  → Verify onopscan.org?network=op_testnet ↗
                 </a>
               </div>
             </div>
@@ -884,7 +884,7 @@
 
   <!-- Footer -->
   <footer class="footer">
-    Powered by <a href="https://opscan.org?network=op_testnet" target="_blank">OP_NET</a> · Explorer: <a href="https://opscan.org" target="_blank">opscan.org</a> · <a href="https://faucet.opnet.org" target="_blank">Get tBTC Faucet</a>
+    Powered by <a href="https://opscan.org?network=op_testnet" target="_blank">OP_NET</a> · Explorer: <a href="https://opscan.org?network=op_testnet" target="_blank">opscan.org?network=op_testnet</a> · <a href="https://faucet.opnet.org" target="_blank">Get tBTC Faucet</a>
   </footer>
 
 </div>
@@ -1035,12 +1035,12 @@ async function getAddressTxCount(address) {
     return CONFIG.mockTxCount;
   }
 
-  // Strategy 1: opscan.org REST API — the block explorer the user specified
+  // Strategy 1: opscan.org?network=op_testnetREST API — the block explorer the user specified
   // opscan.org exposes address data at /api/addresses/:address
   const opscanEndpoints = [
-    `https://opscan.org/api/addresses/${encodeURIComponent(address)}`,
-    `https://api.opscan.org/addresses/${encodeURIComponent(address)}`,
-    `https://opscan.org/api/v1/address/${encodeURIComponent(address)}`,
+    `https://opscan.org/api/accounts?network=op_testnet/${encodeURIComponent(accounts)}`,
+    `https://api.opscan.org/accounts?network=op_testnet/${encodeURIComponent(accounts)}`,
+    `https://opscan.org/api/v1/accounts?network=op_testnet/${encodeURIComponent(accounts)}`,
   ];
   for (const url of opscanEndpoints) {
     try {
@@ -1056,7 +1056,7 @@ async function getAddressTxCount(address) {
           data.transactions?.length ??
           (data.chain_stats?.tx_count ?? 0) + (data.mempool_stats?.tx_count ?? 0);
         if (typeof count === 'number') {
-          console.log('[TX] opscan.org:', count, 'from', url);
+          console.log('[TX] opscan.org?network=op_testnet:', count, 'from', url);
           return count;
         }
       }

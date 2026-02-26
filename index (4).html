@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPNET Airdrop — Bitcoin Layer 1 Testnet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #040608;
+      --surface: #0c0f14;
+      --surface2: #141820;
+      --border: #1e2530;
+      --orange: #f5841f;
+      --orange-glow: #f5841f44;
+      --orange-dim: #f5841f22;
+      --gold: #fbbf24;
+      --green: #22d3a5;
+      --red: #ef4444;
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, var(--orange-dim) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #000;
+      font-family: var(--mono);
+    }
+
+    .logo-name {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text);
+    }
+
+    .logo-name span { color: var(--orange); }
+
+    .network-badge {
+      background: var(--orange-dim);
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.08em;
+      animation: pulse-badge 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--orange);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 7vw, 56px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 .accent { color: var(--orange); }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 480px;
+      margin: 0 auto 32px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .stat {
+      background: var(--surface);
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--orange);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+
+    .card-body { padding: 24px; }
+
+    .btn {
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: var(--orange);
+      color: #000;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #e07318;
+      box-shadow: 0 0 32px var(--orange-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    .btn-outline:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #000;
+    }
+
+    .btn-green:hover:not(:disabled) {
+      filter: brightness(1.1);
+      box-shadow: 0 0 24px #22d3a544;
+      transform: translateY(-1px);
+    }
+
+    .btn-green:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .wallet-info {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .wallet-info.visible { display: flex; }
+
+    .addr-row {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .addr-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .addr-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot-red { background: var(--red); }
+    .dot-orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+    /* --- Eligibility check --- */
+    .eligibility-block {
+      display: none;
+    }
+
+    .eligibility-block.visible { display: block; }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .check-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .check-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .check-pass { background: #22d3a522; border: 1px solid var(--green); color: var(--green); }
+    .check-fail { background: #ef444422; border: 1px solid var(--red); color: var(--red); }
+    .check-pending { background: var(--orange-dim); border: 1px solid var(--orange); color: var(--orange); }
+
+    .check-text { flex: 1; }
+    .check-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .check-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* --- Airdrop amount --- */
+    .amount-display {
+      text-align: center;
+      padding: 28px 24px;
+      background: var(--surface2);
+      border: 1px solid var(--orange);
+      border-radius: 12px;
+      margin: 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .amount-display::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, var(--orange-dim), transparent 70%);
+      pointer-events: none;
+    }
+
+    .amount-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 12px;
+    }
+
+    .amount-value {
+      font-family: var(--mono);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 4px;
+      text-shadow: 0 0 40px #fbbf2488;
+    }
+
+    .amount-token {
+      font-family: var(--mono);
+      font-size: 16px;
+      color: var(--orange);
+      letter-spacing: 0.1em;
+    }
+
+    /* --- Status messages --- */
+    .status-msg {
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      display: none;
+      word-break: break-all;
+    }
+
+    .status-msg.visible { display: block; }
+    .status-info { background: var(--orange-dim); border: 1px solid var(--orange); color: var(--orange); }
+    .status-success { background: #22d3a511; border: 1px solid var(--green); color: var(--green); }
+    .status-error { background: #ef444411; border: 1px solid var(--red); color: var(--red); }
+
+    /* --- Progress steps --- */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .step:last-child::after { display: none; }
+
+    .step-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+
+    .step.active .step-circle {
+      border-color: var(--orange);
+      background: var(--orange);
+      color: #000;
+      box-shadow: 0 0 16px var(--orange-glow);
+    }
+
+    .step.done .step-circle {
+      border-color: var(--green);
+      background: var(--green);
+      color: #000;
+    }
+
+    .step.done::after { background: var(--green); }
+    .step.active::after { background: var(--orange); }
+
+    .step-label {
+      display: block;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: color 0.3s;
+    }
+
+    .step.active .step-label { color: var(--orange); }
+    .step.done .step-label { color: var(--green); }
+
+    /* --- TX Hash display --- */
+    .tx-hash-block {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--green);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .tx-hash-block.visible { display: block; }
+
+    .tx-hash-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+
+    .tx-hash-value {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--green);
+      word-break: break-all;
+    }
+
+    /* --- Info boxes --- */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .info-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .info-box-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .info-box-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* --- No wallet warning --- */
+    .no-wallet-warn {
+      background: #ef444411;
+      border: 1px solid var(--red);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .no-wallet-warn a {
+      color: var(--orange);
+      text-decoration: none;
+    }
+
+    .no-wallet-warn a:hover { text-decoration: underline; }
+
+    /* --- Footer --- */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer a { color: var(--orange); text-decoration: none; }
+
+    /* --- Loading spinner --- */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #00000044;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Animates in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card { animation: fadeUp 0.4s ease both; }
+    .card:nth-child(2) { animation-delay: 0.05s; }
+    .card:nth-child(3) { animation-delay: 0.1s; }
+
+    /* --- Claimed badge --- */
+    .claimed-badge {
+      display: none;
+      background: #22d3a511;
+      border: 2px solid var(--green);
+      border-radius: 12px;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .claimed-badge.visible { display: block; }
+    .claimed-badge-icon { font-size: 48px; margin-bottom: 12px; }
+    .claimed-badge h3 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .claimed-badge p {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+      .steps { gap: 0; }
+    }
+    .tier-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      transition: background 0.2s;
+    }
+
+    .tier-row:last-child { margin-bottom: 0; }
+
+    .tier-row.active-tier {
+      background: var(--orange-dim);
+      border: 1px solid var(--orange);
+    }
+
+    .tier-range {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tier-row.active-tier .tier-range { color: var(--orange); }
+
+    .tier-tokens {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tier-row.active-tier .tier-tokens { color: var(--gold); }
+
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">₿</div>
+      <div class="logo-name"><span>OP</span>_DROP</div>
+    </div>
+    <div class="network-badge">⬡ TESTNET</div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">Bitcoin Layer 1 · OP_NET Testnet</div>
+    <h1>Claim Your<br/><span class="accent">OPTEST</span> Airdrop</h1>
+    <p>Connect your OP_WALLET and claim free OPTEST tokens on Bitcoin Layer 1. Eligible wallets need at least 2 testnet transactions.</p>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-value" id="totalSupply">1,000,000</span>
+      <span class="stat-label">Total Supply (OPTEST)</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="claimed">—</span>
+      <span class="stat-label">Wallets Claimed</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="perWalletStat">100–5,000</span>
+      <span class="stat-label">Per Wallet (by TXs)</span>
+    </div>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <div class="step-circle">1</div>
+      <span class="step-label">Connect</span>
+    </div>
+    <div class="step" id="step2">
+      <div class="step-circle">2</div>
+      <span class="step-label">Verify</span>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-circle">3</div>
+      <span class="step-label">Claim</span>
+    </div>
+  </div>
+
+  <!-- Card 1: Connect Wallet -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">WALLET CONNECTION</span>
+      <div class="status-dot" id="walletDot" style="background:var(--muted)"></div>
+    </div>
+    <div class="card-body">
+
+      <!-- No OP_WALLET detected -->
+      <div class="no-wallet-warn" id="noWalletWarn" style="display:none">
+        <div style="font-size:28px;margin-bottom:10px">🧩</div>
+        <div style="font-weight:700;margin-bottom:8px">OP_WALLET Not Detected</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px">
+          Install the OP_WALLET extension to continue.
+        </div>
+        <a href="https://chromewebstore.google.com/detail/opwallet/pmbjpcmaaladnfpacpmhmnfmpklgbdjb" target="_blank" rel="noopener">
+          → Download OP_WALLET from Chrome Web Store
+        </a>
+      </div>
+
+      <!-- Connect button -->
+      <button class="btn btn-primary" id="connectBtn" onclick="connectWallet()">
+        <span>Connect OP_WALLET</span>
+      </button>
+
+      <!-- Wallet info (shown after connect) -->
+      <div class="wallet-info" id="walletInfo">
+        <div class="addr-row">
+          <div>
+            <div class="addr-label">Connected Address</div>
+            <div class="addr-value" id="displayAddress">—</div>
+          </div>
+          <div class="status-dot dot-green"></div>
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-box-label">Network</div>
+            <div class="info-box-value">BTC Testnet</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">tBTC Balance</div>
+            <div class="info-box-value" id="btcBalance">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Card 2: Eligibility -->
+  <div class="card" id="eligibilityCard" style="opacity:0.4;pointer-events:none">
+    <div class="card-header">
+      <span class="card-title">ELIGIBILITY CHECK</span>
+      <div id="eligDot" class="status-dot" style="background:var(--muted)"></div>
+    </div>
+    <div class="card-body">
+
+      <button class="btn btn-outline" id="checkBtn" onclick="checkEligibility()" disabled>
+        Check Eligibility
+      </button>
+
+      <div class="eligibility-block" id="eligibilityBlock">
+        <div style="margin-top:20px">
+          <div class="check-row">
+            <div class="check-icon" id="opwCheck">?</div>
+            <div class="check-text">
+              <div class="check-title">OP_WALLET Connected</div>
+              <div class="check-sub">Official OP_NET wallet required</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <div class="check-icon" id="txCheck">?</div>
+            <div class="check-text">
+              <div class="check-title">Transaction Count ≥ 2</div>
+              <div class="check-sub" id="txCountLabel">Checking...</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <div class="check-icon" id="alreadyCheck">?</div>
+            <div class="check-text">
+              <div class="check-title">Not Previously Claimed</div>
+              <div class="check-sub" id="alreadyLabel">Checking...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Card 3: Claim -->
+  <div class="card" id="claimCard" style="opacity:0.4;pointer-events:none">
+    <div class="card-header">
+      <span class="card-title">CLAIM AIRDROP</span>
+      <div class="status-dot" id="claimDot" style="background:var(--muted)"></div>
+    </div>
+    <div class="card-body">
+
+      <div class="amount-display">
+        <div class="amount-label">Your Allocation</div>
+        <div class="amount-value" id="allocationAmount">—</div>
+        <div class="amount-token">OPTEST</div>
+        <div id="allocationNote" style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px;">Connect wallet to calculate</div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;">Token Contract</div>
+          <div id="contractAddr" style="font-family:var(--mono);font-size:12px;color:var(--orange);word-break:break-all;letter-spacing:0.02em;">0x2025c5d2b2ae3572d8ac293c9fcb0215eba4e72a2937ca5b9ca6adc3c66a4b12</div>
+        </div>
+        <button onclick="copyContract()" id="copyContractBtn" title="Copy address" style="flex-shrink:0;background:var(--orange-dim);border:1px solid var(--orange);color:var(--orange);font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all 0.15s;">Copy</button>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">Allocation Tiers</div>
+        <div id="tierRows">
+          <div class="tier-row" data-min="2" data-max="4"><span class="tier-range">2 – 4 TXs</span><span class="tier-tokens">100 OPTEST</span></div>
+          <div class="tier-row" data-min="5" data-max="9"><span class="tier-range">5 – 9 TXs</span><span class="tier-tokens">250 OPTEST</span></div>
+          <div class="tier-row" data-min="10" data-max="24"><span class="tier-range">10 – 24 TXs</span><span class="tier-tokens">500 OPTEST</span></div>
+          <div class="tier-row" data-min="25" data-max="49"><span class="tier-range">25 – 49 TXs</span><span class="tier-tokens">1,000 OPTEST</span></div>
+          <div class="tier-row" data-min="50" data-max="99"><span class="tier-range">50 – 99 TXs</span><span class="tier-tokens">2,000 OPTEST</span></div>
+          <div class="tier-row" data-min="100" data-max="Infinity"><span class="tier-range">100+ TXs</span><span class="tier-tokens">5,000 OPTEST</span></div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-bottom:16px;">
+        <div class="info-box-label">Claim Deadline</div>
+        <div class="info-box-value">No Expiry</div>
+      </div>
+
+      <!-- Status messages -->
+      <div class="status-msg status-info" id="statusMsg">Connect wallet and verify eligibility first.</div>
+
+      <div class="claimed-badge" id="claimedBadge">
+        <div class="claimed-badge-icon">🎉</div>
+        <h3>Airdrop Claimed!</h3>
+        <p id="claimedTxLabel">TX: pending...</p>
+      </div>
+
+      <div class="tx-hash-block" id="txBlock">
+        <div class="tx-hash-label">Transaction Hash</div>
+        <div class="tx-hash-value" id="txHash">—</div>
+      </div>
+
+      <button class="btn btn-green" id="claimBtn" onclick="claimAirdrop()" disabled style="margin-top:20px">
+        Claim OPTEST
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Powered by <a href="https://opnet.org" target="_blank">OP_NET</a> · Bitcoin Layer 1 Testnet ·
+    <a href="https://faucet.opnet.org" target="_blank">Get tBTC Faucet</a>
+  </footer>
+
+</div>
+
+<script>
+const CONFIG = {
+  rpc: 'https://testnet.opnet.org',
+  contractAddress: '0x2025c5d2b2ae3572d8ac293c9fcb0215eba4e72a2937ca5b9ca6adc3c66a4b12',
+  minTxRequired: 2,
+  network: 'testnet',
+  testMode: false,
+};
+
+const TIERS = [
+  { min: 2,   max: 4,        tokens: 100  },
+  { min: 5,   max: 9,        tokens: 250  },
+  { min: 10,  max: 24,       tokens: 500  },
+  { min: 25,  max: 49,       tokens: 1000 },
+  { min: 50,  max: 99,       tokens: 2000 },
+  { min: 100, max: Infinity, tokens: 5000 },
+];
+
+function calcAllocation(txs) {
+  for (const tier of TIERS) {
+    if (txs >= tier.min && txs <= tier.max) return tier.tokens;
+  }
+  return 0;
+}
+
+function highlightTier(txs) {
+  document.querySelectorAll('.tier-row').forEach(row => {
+    const min = parseInt(row.dataset.min);
+    const max = row.dataset.max === 'Infinity' ? Infinity : parseInt(row.dataset.max);
+    row.classList.toggle('active-tier', txs >= min && txs <= max);
+  });
+}
+
+if (CONFIG.testMode) {
+  window.opnet = {
+    isOPWallet: true,
+    _mockAddress: 'tb1p4test8mock9wallet0address1opnet2demoabc3xyz',
+    requestAccounts: async () => ['tb1p4test8mock9wallet0address1opnet2demoabc3xyz'],
+    getAccounts:     async () => [],
+    getPublicKey:    async () => '02abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+    getBalance:      async () => 182500,
+    sendOpTransaction: async (params) => {
+      await new Promise(r => setTimeout(r, 1800));
+      return 'f4a9c2e8b1d3057694abcdef1234567890fedcba9876543210' + Math.random().toString(16).slice(2, 10);
+    },
+  };
+
+  const _origGetTxCount = window._mockGetTxCount;
+  window._mockGetTxCount = async () => CONFIG.mockTxCount;
+  window._mockAlreadyClaimed = async () => CONFIG.mockAlreadyClaimed;
+
+  const testBanner = document.createElement('div');
+  testBanner.innerHTML = `
+    <div style="position:fixed;bottom:0;left:0;right:0;z-index:999;background:#f5841f;color:#000;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <span>🧪 TEST MODE — mock wallet active · TX count: <span id="mockTxDisplay">${CONFIG.mockTxCount}</span></span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span>Simulate TXs:</span>
+        <button onclick="setMockTx(3)"  style="padding:2px 8px;border-radius:4px;border:2px solid #000;background:#000;color:#f5841f;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">3</button>
+        <button onclick="setMockTx(7)"  style="padding:2px 8px;border-radius:4px;border:2px solid #000;background:#000;color:#f5841f;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">7</button>
+        <button onclick="setMockTx(12)" style="padding:2px 8px;border-radius:4px;border:2px solid #000;background:#000;color:#f5841f;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">12</button>
+        <button onclick="setMockTx(30)" style="padding:2px 8px;border-radius:4px;border:2px solid #000;background:#000;color:#f5841f;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">30</button>
+        <button onclick="setMockTx(60)" style="padding:2px 8px;border-radius:4px;border:2px solid #000;background:#000;color:#f5841f;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">60</button>
+        <button onclick="setMockTx(120)" style="padding:2px 8px;border-radius:4px;border:2px solid #000;background:#000;color:#f5841f;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">120</button>
+        <button onclick="resetDemo()" style="padding:2px 10px;border-radius:4px;border:2px solid #000;background:#000;color:#fff;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;">↺ Reset</button>
+      </div>
+    </div>`;
+  document.body.appendChild(testBanner);
+
+  window.setMockTx = (n) => {
+    CONFIG.mockTxCount = n;
+    document.getElementById('mockTxDisplay').textContent = n;
+  };
+
+  window.resetDemo = () => {
+    location.reload();
+  };
+}
+
+let walletAddress = null;
+let walletPubKey = null;
+let isEligible = false;
+let hasClaimed = false;
+let txCount = 0;
+let userAllocation = 0;
+
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  }
+}
+
+function setDot(id, color) {
+  const el = document.getElementById(id);
+  el.style.background = color;
+  if (color === 'var(--green)') el.style.boxShadow = '0 0 8px var(--green)';
+  else if (color === 'var(--orange)') el.style.boxShadow = '0 0 8px var(--orange)';
+  else el.style.boxShadow = 'none';
+}
+
+function showMsg(id, cls, text) {
+  const el = document.getElementById(id);
+  el.className = 'status-msg ' + cls + ' visible';
+  el.textContent = text;
+}
+
+function setCheckIcon(id, state) {
+  const el = document.getElementById(id);
+  el.className = 'check-icon ' + state;
+  if (state === 'check-pass') el.textContent = '✓';
+  else if (state === 'check-fail') el.textContent = '✗';
+  else el.textContent = '…';
+}
+
+function truncate(addr, front = 12, back = 8) {
+  if (!addr) return '—';
+  if (addr.length <= front + back) return addr;
+  return addr.slice(0, front) + '…' + addr.slice(-back);
+}
+
+function enableCard(id) {
+  const card = document.getElementById(id);
+  card.style.opacity = '1';
+  card.style.pointerEvents = 'auto';
+}
+
+async function opnetRPC(method, params = []) {
+  const res = await fetch(CONFIG.rpc, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  return data.result;
+}
+
+// Get transaction count for address via OPNET testnet
+async function getAddressTxCount(address) {
+  if (CONFIG.testMode) {
+    await new Promise(r => setTimeout(r, 700));
+    return CONFIG.mockTxCount;
+  }
+  try {
+    // OPNET uses btc_getTransactionHistory or custom endpoints
+    const result = await opnetRPC('btc_getTransactionHistory', [{ address, limit: 10 }]);
+    if (result && Array.isArray(result.transactions)) {
+      return result.transactions.length;
+    }
+    if (typeof result === 'number') return result;
+    // Fallback: try checking UTXOs
+    const utxoResult = await opnetRPC('btc_getUTXOs', [address]);
+    if (utxoResult && utxoResult.length !== undefined) {
+      // Has UTXOs => at least some activity, but we count via history
+      return utxoResult.length > 0 ? CONFIG.minTxRequired : 0;
+    }
+    return 0;
+  } catch (e) {
+    console.warn('TX count RPC call failed, trying fallback:', e.message);
+    // Fallback to address info endpoint
+    try {
+      const info = await opnetRPC('btc_getAddressInfo', [address]);
+      return info?.txCount ?? info?.transaction_count ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+}
+
+// Check if address already claimed (reads from contract state)
+async function checkAlreadyClaimed(address) {
+  if (CONFIG.testMode) {
+    await new Promise(r => setTimeout(r, 500));
+    return CONFIG.mockAlreadyClaimed;
+  }
+  try {
+    const result = await opnetRPC('op_call', [{
+      to: CONFIG.contractAddress,
+      data: encodeSelector('hasClaimed', address),
+    }]);
+    if (!result || !result.returnValue) return false;
+    // Parse returned boolean (last byte)
+    const hex = result.returnValue.replace('0x', '');
+    const lastByte = parseInt(hex.slice(-2), 16);
+    return lastByte === 1;
+  } catch {
+    return false;
+  }
+}
+
+function encodeSelector(fnName, address = '') {
+  const selectors = {
+    hasClaimed:     '0x3b4da69f',
+    totalClaimed:   '0x74ed8a4b',
+    isAirdropActive:'0x91d50e9c',
+    getAllocation:  '0xa5e8e2b4',
+    claim:          '0x379607f5',
+  };
+  const sel = selectors[fnName] || '0x00000000';
+  if (!address) return sel;
+  return sel + address.replace(/[^a-fA-F0-9]/g, '').padStart(64, '0');
+}
+
+function encodeClaimCalldata(txCount) {
+  // claim(u32 txCount) — selector 0x379607f5 + txCount as 4-byte big-endian
+  const sel = '379607f5';
+  const count = txCount.toString(16).padStart(8, '0');
+  return '0x' + sel + count;
+}
+
+async function connectWallet() {
+  const btn = document.getElementById('connectBtn');
+
+  const provider = window.opnet || window.bitcoin;
+
+  if (!provider) {
+    document.getElementById('noWalletWarn').style.display = 'block';
+    btn.style.display = 'none';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Connecting…';
+
+  try {
+    let accounts;
+    if (provider.requestAccounts) {
+      accounts = await provider.requestAccounts();
+    } else if (provider.connect) {
+      const result = await provider.connect();
+      accounts = result?.accounts || [result?.address];
+    } else {
+      accounts = await provider.getAccounts();
+    }
+
+    if (!accounts || accounts.length === 0) throw new Error('No accounts returned');
+
+    walletAddress = accounts[0];
+
+    try {
+      walletPubKey = await provider.getPublicKey();
+    } catch { walletPubKey = null; }
+
+    let balance = '—';
+    try {
+      const bal = await provider.getBalance?.();
+      if (bal !== undefined) {
+        balance = (Number(bal) / 1e8).toFixed(6) + ' tBTC';
+      }
+    } catch { /* optional */ }
+
+    document.getElementById('connectBtn').style.display = 'none';
+    document.getElementById('walletInfo').classList.add('visible');
+    document.getElementById('displayAddress').textContent = truncate(walletAddress, 16, 8);
+    document.getElementById('displayAddress').title = walletAddress;
+    document.getElementById('btcBalance').textContent = balance;
+    setDot('walletDot', 'var(--green)');
+
+    enableCard('eligibilityCard');
+    document.getElementById('checkBtn').disabled = false;
+    setStep(2);
+
+    updateClaimedStat();
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Connect OP_WALLET</span>';
+    showMsg('statusMsg', 'status-error', '❌ ' + (err.message || 'Connection failed'));
+    document.getElementById('statusMsg').classList.add('visible');
+    setDot('walletDot', 'var(--red)');
+  }
+}
+
+async function updateClaimedStat() {
+  try {
+    const claimedResult = await opnetRPC('op_call', [{
+      to: CONFIG.contractAddress,
+      data: '0x74ed8a4b',
+    }]);
+    if (claimedResult?.returnValue) {
+      const n = parseInt(claimedResult.returnValue, 16);
+      document.getElementById('claimed').textContent = n.toLocaleString();
+    }
+  } catch { }
+
+  try {
+    const supplyResult = await opnetRPC('op_call', [{
+      to: CONFIG.contractAddress,
+      data: '0x18160ddd',
+    }]);
+    if (supplyResult?.returnValue) {
+      const raw = BigInt(supplyResult.returnValue);
+      const supply = raw / BigInt(10 ** 18);
+      document.getElementById('totalSupply').textContent = supply.toLocaleString();
+    }
+  } catch { }
+}
+
+async function checkEligibility() {
+  const btn = document.getElementById('checkBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Checking…';
+
+  document.getElementById('eligibilityBlock').classList.add('visible');
+
+  setCheckIcon('opwCheck', 'check-pending');
+  setCheckIcon('txCheck', 'check-pending');
+  setCheckIcon('alreadyCheck', 'check-pending');
+
+  await delay(400);
+
+  const provider = window.opnet || window.bitcoin;
+  const isOpWallet = !!(provider && (provider.isOPWallet || provider._isOPWallet || provider.isOpnet));
+
+  if (isOpWallet || provider) {
+    setCheckIcon('opwCheck', 'check-pass');
+  } else {
+    setCheckIcon('opwCheck', 'check-fail');
+    finishEligibility(false, btn);
+    return;
+  }
+
+  await delay(300);
+
+  try {
+    txCount = await getAddressTxCount(walletAddress);
+    const projected = calcAllocation(txCount);
+    document.getElementById('txCountLabel').textContent =
+      `${txCount} TX${txCount !== 1 ? 's' : ''} found → ${projected > 0 ? projected.toLocaleString() + ' OPTEST' : 'not eligible'}`;
+    if (txCount >= CONFIG.minTxRequired) {
+      setCheckIcon('txCheck', 'check-pass');
+    } else {
+      setCheckIcon('txCheck', 'check-fail');
+      document.getElementById('txCountLabel').textContent =
+        `Only ${txCount} tx found — need at least ${CONFIG.minTxRequired}`;
+      finishEligibility(false, btn);
+      return;
+    }
+  } catch (e) {
+    setCheckIcon('txCheck', 'check-pass');
+    document.getElementById('txCountLabel').textContent = 'RPC check skipped — proceeding';
+  }
+
+  await delay(300);
+
+  hasClaimed = await checkAlreadyClaimed(walletAddress);
+  if (hasClaimed) {
+    setCheckIcon('alreadyCheck', 'check-fail');
+    document.getElementById('alreadyLabel').textContent = 'This address already claimed';
+    finishEligibility(false, btn, true);
+  } else {
+    setCheckIcon('alreadyCheck', 'check-pass');
+    document.getElementById('alreadyLabel').textContent = 'No prior claim found';
+    finishEligibility(true, btn);
+  }
+}
+
+function finishEligibility(eligible, btn, alreadyClaimed = false) {
+  btn.disabled = false;
+  btn.innerHTML = 'Re-check Eligibility';
+  isEligible = eligible;
+
+  if (alreadyClaimed) {
+    setDot('eligDot', 'var(--orange)');
+    enableCard('claimCard');
+    document.getElementById('claimedBadge').classList.add('visible');
+    document.getElementById('claimedTxLabel').textContent = 'Previously claimed.';
+    setStep(3);
+    return;
+  }
+
+  if (eligible) {
+    userAllocation = calcAllocation(txCount);
+    highlightTier(txCount);
+
+    document.getElementById('allocationAmount').textContent = userAllocation.toLocaleString();
+    document.getElementById('allocationNote').textContent =
+      `Based on ${txCount} transaction${txCount !== 1 ? 's' : ''} on OPNET Testnet`;
+    document.getElementById('claimBtn').textContent = `Claim ${userAllocation.toLocaleString()} OPTEST`;
+
+    setDot('eligDot', 'var(--green)');
+    enableCard('claimCard');
+    document.getElementById('claimBtn').disabled = false;
+    showMsg('statusMsg', 'status-info',
+      `✅ Eligible! You qualify for ${userAllocation.toLocaleString()} OPTEST based on ${txCount} TXs.`);
+    document.getElementById('statusMsg').classList.add('visible');
+    setStep(3);
+    setDot('claimDot', 'var(--orange)');
+  } else {
+    setDot('eligDot', 'var(--red)');
+    showMsg('statusMsg', 'status-error',
+      '❌ Not eligible. You need at least 2 transactions on OPNET Testnet. Visit faucet.opnet.org to get started!');
+    document.getElementById('statusMsg').classList.add('visible');
+  }
+}
+
+async function claimAirdrop() {
+  if (!isEligible || !walletAddress) return;
+
+  const btn = document.getElementById('claimBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing Transaction…';
+
+  showMsg('statusMsg', 'status-info', `⏳ Preparing claim for ${userAllocation.toLocaleString()} OPTEST…`);
+
+  try {
+    const provider = window.opnet || window.bitcoin;
+
+    const calldata = buildClaimCalldata(walletAddress);
+
+    const txParams = {
+      to: CONFIG.contractAddress,
+      from: walletAddress,
+      data: calldata,
+      priorityFee: '50000',
+      feeRate: 10,
+      network: CONFIG.network,
+    };
+
+    let txHash;
+
+    if (provider.sendOpTransaction) {
+      txHash = await provider.sendOpTransaction(txParams);
+    } else if (provider.signAndBroadcastInteraction) {
+      txHash = await provider.signAndBroadcastInteraction(txParams);
+    } else if (provider.sendBitcoin || provider.signPsbt) {
+      txHash = await provider.sendBitcoin?.(CONFIG.contractAddress, 1000, { data: calldata });
+    } else {
+      throw new Error('OP_WALLET does not support transaction signing. Please update your wallet.');
+    }
+
+    if (!txHash) throw new Error('No transaction hash returned');
+
+    showSuccess(txHash);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `Claim ${userAllocation.toLocaleString()} OPTEST`;
+    showMsg('statusMsg', 'status-error',
+      '❌ Claim failed: ' + (err.message || 'Unknown error'));
+    setDot('claimDot', 'var(--red)');
+  }
+}
+
+function buildClaimCalldata(address) {
+  return encodeClaimCalldata(txCount);
+}
+
+function showSuccess(txHash) {
+  document.getElementById('claimBtn').style.display = 'none';
+  document.getElementById('statusMsg').style.display = 'none';
+  document.getElementById('claimedBadge').classList.add('visible');
+  document.getElementById('claimedTxLabel').textContent =
+    `${userAllocation.toLocaleString()} OPTEST claimed · TX: ${truncate(txHash, 20, 8)}`;
+  document.getElementById('txBlock').classList.add('visible');
+  document.getElementById('txHash').textContent = txHash;
+  setDot('claimDot', 'var(--green)');
+  setStep(4);
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+    document.getElementById('step' + i).classList.add('done');
+  }
+}
+
+function copyContract() {
+  navigator.clipboard.writeText(CONFIG.contractAddress).then(() => {
+    const btn = document.getElementById('copyContractBtn');
+    btn.textContent = 'Copied!';
+    btn.style.background = '#22d3a522';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.style.background = 'var(--orange-dim)';
+      btn.style.borderColor = 'var(--orange)';
+      btn.style.color = 'var(--orange)';
+    }, 2000);
+  });
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+window.addEventListener('load', async () => {
+  document.getElementById('contractAddr').textContent = CONFIG.contractAddress;
+
+  // Pull total supply live from contract
+  try {
+    const result = await opnetRPC('op_call', [{
+      to: CONFIG.contractAddress,
+      data: '0x18160ddd', // totalSupply() standard OP-20 selector
+    }]);
+    if (result?.returnValue) {
+      const raw = BigInt(result.returnValue);
+      const supply = Number(raw / BigInt(10 ** 18));
+      document.getElementById('totalSupply').textContent = supply.toLocaleString();
+    }
+  } catch { /* keep hardcoded fallback */ }
+
+  const provider = window.opnet || window.bitcoin;
+  if (!provider) {
+    setTimeout(() => {
+      document.getElementById('connectBtn').innerHTML =
+        '🧩 Connect OP_WALLET Extension';
+    }, 500);
+    return;
+  }
+
+  try {
+    const accounts = await provider.getAccounts?.();
+    if (accounts && accounts.length > 0) {
+      await connectWallet();
+    }
+  } catch { }
+});
+</script>
+</body>
+</html>

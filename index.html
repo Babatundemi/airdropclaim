@@ -1272,7 +1272,7 @@ async function checkEligibility() {
     // Show opscan link so user can verify
     const opscanLink = document.getElementById('opscanLink');
     const opscanHref = document.getElementById('opscanHref');
-    opscanHref.href = `https://opscan.org/address/${walletAddress}`;
+    opscanHref.href = `https://opscan.org/accounts/${walletAddress}?network=op_testnet`;
     opscanLink.style.display = 'block';
 
     if (txCount >= CONFIG.minTxRequired) {

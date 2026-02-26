@@ -1,94 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OP_DROP Airdrop</title>
+
+<style>
+body{
+  background:#0c0f14;
+  color:white;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  padding-top:60px;
+}
+
+.container{
+  width:400px;
+  background:#141820;
+  padding:25px;
+  border-radius:12px;
+  border:1px solid #222;
+}
+
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.connect{ background:#f5841f; color:black; }
+.check{ background:#333; color:white; }
+.claim{ background:#22d3a5; color:black; }
+
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.info{
+  margin-top:15px;
+  font-size:14px;
+  word-break:break-all;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>OP_DROP Airdrop</h2>
+
+  <button class="connect" onclick="connectWallet()">Connect OP_WALLET</button>
+
+  <button class="check" id="checkBtn" onclick="checkEligibility()" disabled>
+    Check Eligibility
+  </button>
+
+  <button class="claim" id="claimBtn" onclick="claimAirdrop()" disabled>
+    Claim Airdrop
+  </button>
+
+  <div class="info" id="status"></div>
+</div>
+
 <script>
 let currentAccount = null;
 let isEligible = false;
 
-document.addEventListener("DOMContentLoaded", function () {
+function setStatus(msg){
+  document.getElementById("status").innerText = msg;
+}
 
-  // Detect wallet
-  if (!window.opwallet || !window.opwallet.request) {
-    const warn = document.getElementById("noWalletWarn");
-    if (warn) warn.style.display = "block";
-  }
-
-});
-
-// ---------- CONNECT ----------
-async function connectWallet() {
-  try {
-    if (!window.opwallet || !window.opwallet.request) {
+// CONNECT WALLET
+async function connectWallet(){
+  try{
+    if(!window.opwallet || !window.opwallet.request){
       alert("OP_WALLET not installed");
       return;
     }
 
     const accounts = await window.opwallet.request({
-      method: "eth_requestAccounts"
+      method:"eth_requestAccounts"
     });
 
-    if (!accounts || accounts.length === 0) {
+    if(!accounts || accounts.length === 0){
       alert("No account found");
       return;
     }
 
     currentAccount = accounts[0];
 
-    document.getElementById("displayaccounts").innerText =
-      currentAccount.slice(0, 6) + "..." + currentAccount.slice(-4);
+    setStatus("Connected: " + currentAccount);
 
-    document.getElementById("walletInfo").classList.add("visible");
     document.getElementById("checkBtn").disabled = false;
 
-  } catch (error) {
-    console.error(error);
+  }catch(err){
+    console.error(err);
     alert("Connection failed");
   }
 }
 
-// ---------- CHECK ----------
-async function checkEligibility() {
-  if (!currentAccount) {
+// CHECK ELIGIBILITY
+function checkEligibility(){
+  if(!currentAccount){
     alert("Connect wallet first");
     return;
   }
 
-  // Simulated tx count (replace later)
+  // simulate tx count
   const txCount = 3;
 
-  if (txCount >= 2) {
+  if(txCount >= 2){
     isEligible = true;
-    alert("Eligible ✅");
-  } else {
+    setStatus("Eligible ✅ You can claim.");
+    document.getElementById("claimBtn").disabled = false;
+  }else{
     isEligible = false;
-    alert("Not eligible ❌");
+    setStatus("Not eligible ❌ Need 2 testnet TX.");
   }
 }
 
-// ---------- CLAIM ----------
-async function claimAirdrop() {
-  try {
-    if (!currentAccount) {
+// CLAIM
+async function claimAirdrop(){
+  try{
+    if(!currentAccount){
       alert("Connect wallet first");
       return;
     }
 
-    if (!isEligible) {
+    if(!isEligible){
       alert("Not eligible");
       return;
     }
 
     const tx = await window.opwallet.request({
-      method: "eth_sendTransaction",
-      params: [{
-        from: currentAccount,
-        to: currentAccount,
-        value: "0x0"
+      method:"eth_sendTransaction",
+      params:[{
+        from:currentAccount,
+        to:currentAccount,
+        value:"0x0"
       }]
     });
 
-    alert("Claim success ✅\nTX: " + tx);
+    setStatus("Claim successful ✅ TX: " + tx);
 
-  } catch (error) {
-    console.error(error);
+    document.getElementById("claimBtn").disabled = true;
+
+  }catch(err){
+    console.error(err);
     alert("Claim failed");
   }
 }
 </script>
+
+</body>
+</html>

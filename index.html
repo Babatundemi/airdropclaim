@@ -754,8 +754,8 @@
       <div class="wallet-info" id="walletInfo">
         <div class="addr-row">
           <div>
-            <div class="addr-label">Connected Address</div>
-            <div class="addr-value" id="displayAddress">—</div>
+            <div class="addr-label">Connected accounts</div>
+            <div class="addr-value" id="displayaccounts">—</div>
           </div>
           <div class="status-dot dot-green"></div>
         </div>
@@ -841,7 +841,7 @@
           <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;">Token Contract</div>
           <div id="contractAddr" style="font-family:var(--mono);font-size:12px;color:var(--orange);word-break:break-all;letter-spacing:0.02em;">0x2025c5d2b2ae3572d8ac293c9fcb0215eba4e72a2937ca5b9ca6adc3c66a4b12</div>
         </div>
-        <button onclick="copyContract()" id="copyContractBtn" title="Copy address" style="flex-shrink:0;background:var(--orange-dim);border:1px solid var(--orange);color:var(--orange);font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all 0.15s;">Copy</button>
+        <button onclick="copyContract()" id="copyContractBtn" title="Copy accounts" style="flex-shrink:0;background:var(--orange-dim);border:1px solid var(--orange);color:var(--orange);font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all 0.15s;">Copy</button>
       </div>
 
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
@@ -892,7 +892,7 @@
 <script>
 const CONFIG = {
   rpc: 'https://testnetopscan.org?network=op_testnet',
-  contractAddress: '0x2025c5d2b2ae3572d8ac293c9fcb0215eba4e72a2937ca5b9ca6adc3c66a4b12',
+  contractaccounts: '0x2025c5d2b2ae3572d8ac293c9fcb0215eba4e72a2937ca5b9ca6adc3c66a4b12',
   opscanApi: 'https://opscan.org?network=op_testnet/api',
   minTxRequired: 2,
   network: 'testnet',
@@ -926,8 +926,8 @@ function highlightTier(txs) {
 if (CONFIG.testMode) {
   window.opnet = {
     isOPWallet: true,
-    _mockAddress: 'tb1p4test8mock9wallet0address1opnet2demoabc3xyz',
-    requestAccounts: async () => ['tb1p4test8mock9wallet0address1opnet2demoabc3xyz'],
+    _mockaccounts: 'tb1p4test8mock9wallet0accounts1opnet2demoabc3xyz',
+    requestAccounts: async () => ['tb1p4test8mock9wallet0accounts1opnet2demoabc3xyz'],
     getAccounts:     async () => [],
     getPublicKey:    async () => '02abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
     getBalance:      async () => 182500,
@@ -968,7 +968,7 @@ if (CONFIG.testMode) {
   };
 }
 
-let walletAddress = null;
+let walletaccounts = null;
 let walletPubKey = null;
 let isEligible = false;
 let hasClaimed = false;
@@ -1029,14 +1029,14 @@ async function opnetRPC(method, params = []) {
   return data.result;
 }
 
-async function getAddressTxCount(address) {
+async function getaccountsTxCount(accounts) {
   if (CONFIG.testMode) {
     await new Promise(r => setTimeout(r, 700));
     return CONFIG.mockTxCount;
   }
 
   // Strategy 1: opscan.org?network=op_testnetREST API — the block explorer the user specified
-  // opscan.org exposes address data at /api/addresses/:address
+  // opscan.org exposes accounts data at /api/accountses/:accounts
   const opscanEndpoints = [
     `https://opscan.org/api/accounts?network=op_testnet/${encodeURIComponent(accounts)}`,
     `https://api.opscan.org/accounts?network=op_testnet/${encodeURIComponent(accounts)}`,
@@ -1067,7 +1067,7 @@ async function getAddressTxCount(address) {
 
   // Strategy 2: OPNET testnet RPC — btc_getTransactionHistory
   try {
-    const result = await opnetRPC('btc_getTransactionHistory', [{ address, limit: 500, page: 0 }]);
+    const result = await opnetRPC('btc_getTransactionHistory', [{ accounts, limit: 500, page: 0 }]);
     if (result && Array.isArray(result.transactions)) return result.transactions.length;
     if (result && typeof result.total === 'number') return result.total;
     if (result && typeof result.count === 'number') return result.count;
@@ -1075,20 +1075,20 @@ async function getAddressTxCount(address) {
     console.warn('[TX] btc_getTransactionHistory failed:', e.message);
   }
 
-  // Strategy 3: OPNET RPC — btc_getAddressInfo
+  // Strategy 3: OPNET RPC — btc_getaccountsInfo
   try {
-    const info = await opnetRPC('btc_getAddressInfo', [address]);
+    const info = await opnetRPC('btc_getaccountsInfo', [accounts]);
     if (info) {
       const count = info.txCount ?? info.transaction_count ?? info.txs ?? info.n_tx;
       if (typeof count === 'number') return count;
     }
   } catch (e) {
-    console.warn('[TX] btc_getAddressInfo failed:', e.message);
+    console.warn('[TX] btc_getaccountsInfo failed:', e.message);
   }
 
   // Strategy 4: OPNET RPC — op_getTransactionCount
   try {
-    const result = await opnetRPC('op_getTransactionCount', [address, 'latest']);
+    const result = await opnetRPC('op_getTransactionCount', [accounts, 'latest']);
     if (result !== undefined && result !== null) {
       const count = parseInt(result, 16) || Number(result);
       if (count > 0) return count;
@@ -1099,7 +1099,7 @@ async function getAddressTxCount(address) {
 
   // Strategy 5: OPNET RPC — btc_getUTXOs (last resort)
   try {
-    const utxos = await opnetRPC('btc_getUTXOs', [address]);
+    const utxos = await opnetRPC('btc_getUTXOs', [accounts]);
     if (Array.isArray(utxos) && utxos.length > 0) return CONFIG.minTxRequired;
   } catch (e) {
     console.warn('[TX] btc_getUTXOs failed:', e.message);
@@ -1109,16 +1109,16 @@ async function getAddressTxCount(address) {
   return 0;
 }
 
-// Check if address already claimed (reads from contract state)
-async function checkAlreadyClaimed(address) {
+// Check if accounts already claimed (reads from contract state)
+async function checkAlreadyClaimed(accounts) {
   if (CONFIG.testMode) {
     await new Promise(r => setTimeout(r, 500));
     return CONFIG.mockAlreadyClaimed;
   }
   try {
     const result = await opnetRPC('op_call', [{
-      to: CONFIG.contractAddress,
-      data: encodeSelector('hasClaimed', address),
+      to: CONFIG.contractaccounts,
+      data: encodeSelector('hasClaimed', accounts),
     }]);
     if (!result || !result.returnValue) return false;
     const hex = result.returnValue.replace('0x', '');
@@ -1129,7 +1129,7 @@ async function checkAlreadyClaimed(address) {
   }
 }
 
-function encodeSelector(fnName, address = '') {
+function encodeSelector(fnName, accounts = '') {
   const selectors = {
     hasClaimed:     '0x3b4da69f',
     totalClaimed:   '0x74ed8a4b',
@@ -1138,8 +1138,8 @@ function encodeSelector(fnName, address = '') {
     claim:          '0x379607f5',
   };
   const sel = selectors[fnName] || '0x00000000';
-  if (!address) return sel;
-  return sel + address.replace(/[^a-fA-F0-9]/g, '').padStart(64, '0');
+  if (!accounts) return sel;
+  return sel + accounts.replace(/[^a-fA-F0-9]/g, '').padStart(64, '0');
 }
 
 function encodeClaimCalldata(txCount) {
@@ -1169,14 +1169,14 @@ async function connectWallet() {
       accounts = await provider.requestAccounts();
     } else if (provider.connect) {
       const result = await provider.connect();
-      accounts = result?.accounts || [result?.address];
+      accounts = result?.accounts || [result?.accounts];
     } else {
       accounts = await provider.getAccounts();
     }
 
     if (!accounts || accounts.length === 0) throw new Error('No accounts returned');
 
-    walletAddress = accounts[0];
+    walletaccounts = accounts[0];
 
     try {
       walletPubKey = await provider.getPublicKey();
@@ -1192,8 +1192,8 @@ async function connectWallet() {
 
     document.getElementById('connectBtn').style.display = 'none';
     document.getElementById('walletInfo').classList.add('visible');
-    document.getElementById('displayAddress').textContent = truncate(walletAddress, 16, 8);
-    document.getElementById('displayAddress').title = walletAddress;
+    document.getElementById('displayaccounts').textContent = truncate(walletaccounts, 16, 8);
+    document.getElementById('displayaccounts').title = walletaccounts;
     document.getElementById('btcBalance').textContent = balance;
     setDot('walletDot', 'var(--green)');
 
@@ -1215,7 +1215,7 @@ async function connectWallet() {
 async function updateClaimedStat() {
   try {
     const claimedResult = await opnetRPC('op_call', [{
-      to: CONFIG.contractAddress,
+      to: CONFIG.contractaccounts,
       data: '0x74ed8a4b',
     }]);
     if (claimedResult?.returnValue) {
@@ -1226,7 +1226,7 @@ async function updateClaimedStat() {
 
   try {
     const supplyResult = await opnetRPC('op_call', [{
-      to: CONFIG.contractAddress,
+      to: CONFIG.contractaccounts,
       data: '0x18160ddd',
     }]);
     if (supplyResult?.returnValue) {
@@ -1264,7 +1264,7 @@ async function checkEligibility() {
   await delay(300);
 
   try {
-    txCount = await getAddressTxCount(walletAddress);
+    txCount = await getaccountsTxCount(walletaccounts);
     const projected = calcAllocation(txCount);
     document.getElementById('txCountLabel').textContent =
       `${txCount} TX${txCount !== 1 ? 's' : ''} found → ${projected > 0 ? projected.toLocaleString() + ' OPTEST' : 'not eligible'}`;
@@ -1272,7 +1272,7 @@ async function checkEligibility() {
     // Show opscan link so user can verify
     const opscanLink = document.getElementById('opscanLink');
     const opscanHref = document.getElementById('opscanHref');
-    opscanHref.href = `https://opscan.org/accounts/${walletAddress}?network=op_testnet`;
+    opscanHref.href = `https://opscan.org/accounts/${walletaccounts}?network=op_testnet`;
     opscanLink.style.display = 'block';
 
     if (txCount >= CONFIG.minTxRequired) {
@@ -1291,10 +1291,10 @@ async function checkEligibility() {
 
   await delay(300);
 
-  hasClaimed = await checkAlreadyClaimed(walletAddress);
+  hasClaimed = await checkAlreadyClaimed(walletaccounts);
   if (hasClaimed) {
     setCheckIcon('alreadyCheck', 'check-fail');
-    document.getElementById('alreadyLabel').textContent = 'This address already claimed';
+    document.getElementById('alreadyLabel').textContent = 'This accounts already claimed';
     finishEligibility(false, btn, true);
   } else {
     setCheckIcon('alreadyCheck', 'check-pass');
@@ -1343,7 +1343,7 @@ function finishEligibility(eligible, btn, alreadyClaimed = false) {
 }
 
 async function claimAirdrop() {
-  if (!isEligible || !walletAddress) return;
+  if (!isEligible || !walletaccounts) return;
 
   const btn = document.getElementById('claimBtn');
   btn.disabled = true;
@@ -1354,11 +1354,11 @@ async function claimAirdrop() {
   try {
     const provider = window.opnet || window.bitcoin;
 
-    const calldata = buildClaimCalldata(walletAddress);
+    const calldata = buildClaimCalldata(walletaccounts);
 
     const txParams = {
-      to: CONFIG.contractAddress,
-      from: walletAddress,
+      to: CONFIG.contractaccounts,
+      from: walletaccounts,
       data: calldata,
       priorityFee: '50000',
       feeRate: 10,
@@ -1372,7 +1372,7 @@ async function claimAirdrop() {
     } else if (provider.signAndBroadcastInteraction) {
       txHash = await provider.signAndBroadcastInteraction(txParams);
     } else if (provider.sendBitcoin || provider.signPsbt) {
-      txHash = await provider.sendBitcoin?.(CONFIG.contractAddress, 1000, { data: calldata });
+      txHash = await provider.sendBitcoin?.(CONFIG.contractaccounts, 1000, { data: calldata });
     } else {
       throw new Error('OP_WALLET does not support transaction signing. Please update your wallet.');
     }
@@ -1390,7 +1390,7 @@ async function claimAirdrop() {
   }
 }
 
-function buildClaimCalldata(address) {
+function buildClaimCalldata(accounts) {
   return encodeClaimCalldata(txCount);
 }
 
@@ -1411,7 +1411,7 @@ function showSuccess(txHash) {
 }
 
 function copyContract() {
-  navigator.clipboard.writeText(CONFIG.contractAddress).then(() => {
+  navigator.clipboard.writeText(CONFIG.contractaccounts).then(() => {
     const btn = document.getElementById('copyContractBtn');
     btn.textContent = 'Copied!';
     btn.style.background = '#22d3a522';
@@ -1429,12 +1429,12 @@ function copyContract() {
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 window.addEventListener('load', async () => {
-  document.getElementById('contractAddr').textContent = CONFIG.contractAddress;
+  document.getElementById('contractAddr').textContent = CONFIG.contractaccounts;
 
   // Pull total supply live from contract
   try {
     const result = await opnetRPC('op_call', [{
-      to: CONFIG.contractAddress,
+      to: CONFIG.contractaccounts,
       data: '0x18160ddd', // totalSupply() standard OP-20 selector
     }]);
     if (result?.returnValue) {
